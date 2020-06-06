@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 
+# TODO: Percentage
+
 import argparse
 import sys
 import os
 import nmap
 import time
 from datetime import datetime
+from datetime import timedelta
 import jefftadashi_utils as jtu
 
 def main(argv):
@@ -69,14 +72,24 @@ def run_ping(ip_string, down_time_dict):
 
     
 
-    print (time_st + jtu.color.green + " - Up/Total = " + str(ip_up_count) + "/" + str(ip_total_count) + jtu.color.end)
+    print (jtu.color.cyan + "{" + time_st + "}" + jtu.color.green + " [Up:" + str(ip_up_count) + "/" + str(ip_total_count) + "]" + jtu.color.end)
     #print (jtu.color.red + "DOWN IP's: " + jtu.color.end + str(ip_down_list))
     
 
     #next, iterate down_time_dict and print all differences:
-        # duration = time.now - down_time_dict[ip]
-        #print('.', end='') # example of no newline
 
+    newline = 0 #counter for when to make a newline
+    for d_ip in down_time_dict:
+        if (newline % 7) == 0 and newline != 0: # for when to make new line, MOD operation
+            print("")
+        duration = now_time - down_time_dict[d_ip]
+        duration_neat_seconds = str(int(duration.total_seconds()))
+        print("(" + d_ip.ljust(15) + "-" + duration_neat_seconds.rjust(4) + "s) ", end='')  #LJUST / RJUST to normalise IP string length
+        newline = newline + 1
+
+
+    print ("") #final print for end line
+    print ("") #space between lines
     return down_time_dict
 
 if __name__== "__main__":
