@@ -21,6 +21,8 @@ def main(argv):
     print("   @@        by JeffTadashi       @@") 
     print("   @@#############################@@") 
     print(jtu.color.end + "")
+    print ("(Escape with Ctrl-C or the usual escape keys)")
+    print ("")
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", "--input", nargs='+', help="Input simple space-separated IP or CIDR list")
@@ -32,7 +34,7 @@ def main(argv):
         parser.error("At least one of -f and -i is required!")
 
     if not os.geteuid()==0:
-        print (jtu.color.red + "WARNING!: Script not running as sudo/root. ICMP pings (nmap) will not work as fully intended." +  jtu.color.end)
+        print (jtu.color.yellow + "WARNING!: Script not running as sudo/root. ICMP pings (nmap) will not work as fully intended." +  jtu.color.end)
         print("")
 
 
@@ -72,9 +74,13 @@ def main(argv):
         p_delay = 8 #the default
 
     # Loop thru pings, passing down_ip->time dictionary thru and back
-    while True:
-        down_time_dict = run_ping(ping_ip_str, down_time_dict)
-        time.sleep(p_delay)
+    try:
+        while True:
+            down_time_dict = run_ping(ping_ip_str, down_time_dict)
+            time.sleep(p_delay)
+    except KeyboardInterrupt: #Cntl+C to end
+        print ("")
+        print ("Ctrl-C pressed, exiting...")
 
 def run_ping(ip_string, down_time_dict):
     # input: ip_string,  and down-time-dict
