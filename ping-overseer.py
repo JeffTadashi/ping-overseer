@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
 
-# TODO: file input, and parse all IP's, even multiple IP's on a line
+# TODO: capture CIDR in input file
+
+# TODO: make either -f or -i mandatory
 
 import argparse
 import sys
 import os
+import re
 import nmap
 import time
 from datetime import datetime
@@ -14,7 +17,7 @@ import jefftadashi_utils as jtu
 def main(argv):
 
     parser = argparse.ArgumentParser()
-    #parser.add_argument("-f", "--file", help="Input a file with IP's")
+    parser.add_argument("-f", "--file", help="Input a file with IP's")
     parser.add_argument("-i", "--input", nargs='+', help="Input simple space-separated IP or CIDR list")
     args = parser.parse_args()
 
@@ -25,12 +28,31 @@ def main(argv):
     # Global variables
     ping_ip_str = ''
 
+    # If -f defined, open file (as a List, per line) and starting parsing for IP addresses
+    if args.file:
+        with open(args.file) as file:
+            file_list = file.readlines()
+        total_file_ip_list = []
+        for f_line in file_list:
+            find_ip = re.findall(jtu.regex.ip, f_line) #will ouput a list of ip's. Empty list for no IP's
+            total_file_ip_list = total_file_ip_list + find_ip
+        
+        for i in total_file_ip_list: #Iterate thru final list and add to nmap string
+            ping_ip_str = ping_ip_str + " " + i
+        
+
     # If -i defined, build string from arg-created list of IP/CIDRS
-    for i in args.input:
-        ping_ip_str = ping_ip_str + " " + i
+    if args.input:
+        for i in args.input:
+            ping_ip_str = ping_ip_str + " " + i
 
     # down-time-dict - "10.1.1.1":"timedate object"  format
     down_time_dict = {}
+
+    # Before begin, some info
+    print ("For your reference, the starting IP list is:")
+    print (ping_ip_str)
+    print ("")
 
     while True:
         down_time_dict = run_ping(ping_ip_str, down_time_dict)
@@ -39,7 +61,7 @@ def main(argv):
 
 def run_ping(ip_string, down_time_dict):
     # input: ip_string,  and down-time-dict
-    # output: list of IP's that were down previously, and timestamp?
+    # output: new down-time-dict
 
 
     # Get current timestamp before scan
@@ -71,13 +93,15 @@ def run_ping(ip_string, down_time_dict):
                 down_time_dict[n_ip] = now_time
 
     
-    up_percentage = '{:.1%}'.format(ip_up_count / ip_total_count) 
+    try:
+        up_percentage = '{:.1%}'.format(ip_up_count / ip_total_count) 
+    except: 
+        up_percentage = "N/A%"  #Happens if there are no ip inputs...
+
     print (jtu.color.cyan + "{" + time_st + "}" + jtu.color.purple + " [Up: " + str(ip_up_count) + "/" + str(ip_total_count) + " " + str(up_percentage) + "]" + jtu.color.end)
-    #print (jtu.color.red + "DOWN IP's: " + jtu.color.end + str(ip_down_list))
     
 
-    #next, iterate down_time_dict and print all differences:
-
+    #next, iterate down_time_dict and print all time differences
     newline = 0 #counter for when to make a newline
     for d_ip in down_time_dict:
         if (newline % 7) == 0 and newline != 0: # for when to make new line, MOD operation
