@@ -2,6 +2,8 @@
 
 # TODO: capture CIDR in input file (there is an issue with capturing regex groups being separated in results)
 
+# TODO: Monitoring phase to ignore IP's that are down during that initial time (60s). 
+# Needs to change main "str" input
 
 import argparse
 import sys
@@ -21,17 +23,19 @@ def main(argv):
     print("   @@        by JeffTadashi       @@") 
     print("   @@#############################@@") 
     print(jtu.color.end + "")
-    print ("(Escape with Ctrl-C or the usual escape keys)")
-    print ("")
+
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", "--input", nargs='+', help="Input simple space-separated IP or CIDR list")
-    parser.add_argument("-f", "--file", help="Input a file with IP's")
+    parser.add_argument("-f", "--file", help="Input a file with IP's. Can be any text-based format.")
     parser.add_argument("-d", "--delay", type=float, help="Change delay (in seconds) between nmap ping runs. Default is 8 (seconds)")
     args = parser.parse_args()
 
     if args.file is None and args.input is None:
-        parser.error("At least one of -f and -i is required!")
+        parser.error("At least one of -f or -i is required!")
+
+    print ("(Escape with Ctrl-C or the usual escape keys)")
+    print ("")
 
     if not os.geteuid()==0:
         print (jtu.color.yellow + "WARNING!: Script not running as sudo/root. ICMP pings (nmap) will not work as fully intended." +  jtu.color.end)
@@ -63,7 +67,7 @@ def main(argv):
     down_time_dict = {}
 
     # Before begin, some info
-    print ("For your reference, the starting IP list is:")
+    print (jtu.color.underline + "The starting IP/CIDR list is:" + jtu.color.end)
     print (ping_ip_str)
     print ("")
 
@@ -73,12 +77,14 @@ def main(argv):
     else:
         p_delay = 8 #the default
 
+    
+
     # Loop thru pings, passing down_ip->time dictionary thru and back
     try:
         while True:
             down_time_dict = run_ping(ping_ip_str, down_time_dict)
             time.sleep(p_delay)
-    except KeyboardInterrupt: #Cntl+C to end
+    except KeyboardInterrupt: #Ctrl+C to end
         print ("")
         print ("Ctrl-C pressed, exiting...")
 
@@ -121,7 +127,7 @@ def run_ping(ip_string, down_time_dict):
         up_percentage = "N/A%"  #Happens if there are no ip inputs...
 
     # Print overall status line
-    print (jtu.color.cyan + "{" + time_st + "}" + jtu.color.purple + " [Up: " + str(ip_up_count) + "/" + str(ip_total_count) + " " + str(up_percentage) + "]" + jtu.color.end)
+    print ("{" + time_st + "}" + jtu.color.purple + " [Up: " + str(ip_up_count) + "/" + str(ip_total_count) + " " + str(up_percentage) + "]" + jtu.color.end)
     
 
     #next, iterate down_time_dict and print all down IP's with thier time differences
@@ -137,7 +143,7 @@ def run_ping(ip_string, down_time_dict):
         elif duration.total_seconds() > 60:
             scolor = jtu.color.yellow
         elif duration.total_seconds() > 15:
-            scolor = jtu.color.green
+            scolor = jtu.color.cyan
         else:
             scolor = jtu.color.blue
 
