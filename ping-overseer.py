@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# TODO: Percentage
+# TODO: file input, and parse all IP's, even multiple IP's on a line
 
 import argparse
 import sys
@@ -71,8 +71,8 @@ def run_ping(ip_string, down_time_dict):
                 down_time_dict[n_ip] = now_time
 
     
-
-    print (jtu.color.cyan + "{" + time_st + "}" + jtu.color.green + " [Up:" + str(ip_up_count) + "/" + str(ip_total_count) + "]" + jtu.color.end)
+    up_percentage = '{:.1%}'.format(ip_up_count / ip_total_count) 
+    print (jtu.color.cyan + "{" + time_st + "}" + jtu.color.purple + " [Up: " + str(ip_up_count) + "/" + str(ip_total_count) + " " + str(up_percentage) + "]" + jtu.color.end)
     #print (jtu.color.red + "DOWN IP's: " + jtu.color.end + str(ip_down_list))
     
 
@@ -83,12 +83,22 @@ def run_ping(ip_string, down_time_dict):
         if (newline % 7) == 0 and newline != 0: # for when to make new line, MOD operation
             print("")
         duration = now_time - down_time_dict[d_ip]
+
+        #Set seconds color routine
+        if duration.total_seconds() > 300:
+            scolor = jtu.color.red
+        elif duration.total_seconds() > 45:
+            scolor = jtu.color.yellow
+        else:
+            scolor = jtu.color.green
+
         duration_neat_seconds = str(int(duration.total_seconds()))
-        print("(" + d_ip.ljust(15) + "-" + duration_neat_seconds.rjust(4) + "s) ", end='')  #LJUST / RJUST to normalise IP string length
+
+        print(scolor + "(" + d_ip.ljust(15) + "-" +  duration_neat_seconds.rjust(4) + "s) " + jtu.color.end, end='')  #LJUST / RJUST to normalise IP string length
         newline = newline + 1
 
 
-    print ("") #final print for end line
+    print ("") #final print for end of line
     print ("") #space between lines
     return down_time_dict
 
