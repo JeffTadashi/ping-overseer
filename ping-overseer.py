@@ -2,7 +2,6 @@
 
 # TODO: capture CIDR in input file (there is an issue with capturing regex groups being separated in results)
 
-# TODO: make either -f or -i mandatory
 
 import argparse
 import sys
@@ -16,13 +15,25 @@ import jefftadashi_utils as jtu
 
 def main(argv):
 
+    print(jtu.color.darkcyan + "")
+    print("   @@#############################@@") 
+    print("   @@    " + jtu.color.bold + "    ping-overseer    " + jtu.color.end + jtu.color.darkcyan + "    @@") 
+    print("   @@        by JeffTadashi       @@") 
+    print("   @@#############################@@") 
+    print(jtu.color.end + "")
+
     parser = argparse.ArgumentParser()
-    parser.add_argument("-f", "--file", help="Input a file with IP's")
     parser.add_argument("-i", "--input", nargs='+', help="Input simple space-separated IP or CIDR list")
+    parser.add_argument("-f", "--file", help="Input a file with IP's")
+    parser.add_argument("-d", "--delay", type=float, help="Change delay (in seconds) between nmap ping runs. Default is 8 (seconds)")
     args = parser.parse_args()
+
+    if args.file is None and args.input is None:
+        parser.error("At least one of -f and -i is required!")
 
     if not os.geteuid()==0:
         print (jtu.color.red + "WARNING!: Script not running as sudo/root. ICMP pings (nmap) will not work as fully intended." +  jtu.color.end)
+        print("")
 
 
     # Global variables
@@ -54,10 +65,16 @@ def main(argv):
     print (ping_ip_str)
     print ("")
 
+    # Determine sleep value
+    if args.delay:
+        p_delay = args.delay
+    else:
+        p_delay = 8 #the default
+
+    # Loop thru pings, passing down_ip->time dictionary thru and back
     while True:
         down_time_dict = run_ping(ping_ip_str, down_time_dict)
-        #print (down_time_dict)
-        time.sleep(8)
+        time.sleep(p_delay)
 
 def run_ping(ip_string, down_time_dict):
     # input: ip_string,  and down-time-dict
@@ -78,8 +95,8 @@ def run_ping(ip_string, down_time_dict):
 
     ip_total_count = 0
     ip_up_count = 0
-    ip_down_list = []
 
+    # Iterate thru ping results, and adjust down_dict accordingly
     for n_ip in nm.all_hosts():
         ip_total_count = ip_total_count + 1
         #print (nm[n_ip])
@@ -88,20 +105,20 @@ def run_ping(ip_string, down_time_dict):
             ip_up_count = ip_up_count + 1
             down_time_dict.pop(n_ip, None) #remove IP entry from down_ip_dict, if it was there
         else:
-            ip_down_list.append(n_ip)
             if n_ip not in down_time_dict: # add initial time entry of first down, only if not existing
                 down_time_dict[n_ip] = now_time
 
-    
+    # Get Percentage
     try:
         up_percentage = '{:.1%}'.format(ip_up_count / ip_total_count) 
     except: 
         up_percentage = "N/A%"  #Happens if there are no ip inputs...
 
+    # Print overall status line
     print (jtu.color.cyan + "{" + time_st + "}" + jtu.color.purple + " [Up: " + str(ip_up_count) + "/" + str(ip_total_count) + " " + str(up_percentage) + "]" + jtu.color.end)
     
 
-    #next, iterate down_time_dict and print all time differences
+    #next, iterate down_time_dict and print all down IP's with thier time differences
     newline = 0 #counter for when to make a newline
     for d_ip in down_time_dict:
         if (newline % 7) == 0 and newline != 0: # for when to make new line, MOD operation
@@ -111,10 +128,12 @@ def run_ping(ip_string, down_time_dict):
         #Set seconds color routine
         if duration.total_seconds() > 300:
             scolor = jtu.color.red
-        elif duration.total_seconds() > 45:
+        elif duration.total_seconds() > 60:
             scolor = jtu.color.yellow
-        else:
+        elif duration.total_seconds() > 15:
             scolor = jtu.color.green
+        else:
+            scolor = jtu.color.blue
 
         duration_neat_seconds = str(int(duration.total_seconds()))
 
