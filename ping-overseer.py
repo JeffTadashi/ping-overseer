@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# TODO: capture CIDR in input file
+# TODO: capture CIDR in input file (there is an issue with capturing regex groups being separated in results)
 
 # TODO: make either -f or -i mandatory
 
@@ -22,8 +22,8 @@ def main(argv):
     args = parser.parse_args()
 
     if not os.geteuid()==0:
-        print (jtu.color.red + "ERROR: Script not running as sudo/root. ICMP pings (nmap) will not work as fully intended. Exiting..." +  jtu.color.end)
-        quit()
+        print (jtu.color.red + "WARNING!: Script not running as sudo/root. ICMP pings (nmap) will not work as fully intended." +  jtu.color.end)
+
 
     # Global variables
     ping_ip_str = ''
