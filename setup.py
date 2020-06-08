@@ -5,13 +5,13 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="ping-overseer",
-    version="0.0.4",
+    version="0.0.5",
     author="Jeff Tadashi Moy",
     author_email="jeff@jefftadashi.com",
     description="Mass ping monitoring module!",
     install_requires=[            
           'python-nmap',
-          'jefftadashi_utils',
+          'jefftadashi_utils>=0.0.5',
     ],
     license="gpl-3.0",
     long_description=long_description,

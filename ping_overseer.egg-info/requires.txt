@@ -1,2 +1,2 @@
 python-nmap
-jefftadashi_utils
+jefftadashi_utils>=0.0.5

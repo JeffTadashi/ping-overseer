@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
 
-# TODO: capture CIDR in input file (there is an issue with capturing regex groups being separated in results)
-
 # TODO: Monitoring phase to ignore IP's that are down during that initial time (60s). 
 # Needs to change main "str" input
 
 import argparse
 import sys
 import os
+import shutil
 import re
-import nmap
 import time
 from datetime import datetime
 from datetime import timedelta
+
+import nmap
 import jefftadashi_utils as jtu
 
 def main(argv):
@@ -29,6 +29,7 @@ def main(argv):
     parser.add_argument("-i", "--input", nargs='+', help="Input simple space-separated IP or CIDR list")
     parser.add_argument("-f", "--file", help="Input a file with IP's. Can be any text-based format.")
     parser.add_argument("-d", "--delay", type=float, help="Change delay (in seconds) between nmap ping runs. Default is 8 (seconds)")
+    parser.add_argument("-t", "--time-nmap", dest="time_nmap", type=int, help="Set NMAP timing template. Valid entries are 1 (Slowest) through 5 (Fastest). 3 is default.")
     args = parser.parse_args()
 
     if args.file is None and args.input is None:
@@ -79,19 +80,23 @@ def main(argv):
     else:
         p_delay = 8 #the default
 
-    
+    # Determine nmap time template value
+    if args.time_nmap and args.time_nmap >= 1 and args.time_nmap <= 5 :
+        nmap_time = str(args.time_nmap)
+    else:
+        nmap_time = 3
 
     # Loop thru pings, passing down_ip->time dictionary thru and back
     try:
         while True:
-            down_time_dict = run_ping(ping_ip_str, down_time_dict)
+            down_time_dict = run_ping(ping_ip_str, down_time_dict, nmap_time)
             time.sleep(p_delay)
     except KeyboardInterrupt: #Ctrl+C to end
         print ("")
         print ("Ctrl-C pressed, exiting...")
 
-def run_ping(ip_string, down_time_dict):
-    # input: ip_string,  and down-time-dict
+def run_ping(ip_string, down_time_dict, nmap_time):
+    # input: ip_string,  and down-time-dict, and nmap_time (1-5)
     # output: new down-time-dict
 
 
@@ -100,7 +105,7 @@ def run_ping(ip_string, down_time_dict):
     time_st = now_time.strftime('%Y-%m-%d %H:%M:%S')
 
     nm = nmap.PortScanner()
-    nm.scan(hosts=ip_string, arguments='-n -sn -PE -T3 -v ') # hosts must be space-delimited string
+    nm.scan(hosts=ip_string, arguments='-n -sn -PE -v -T' + str(nmap_time)) # hosts must be space-delimited string. -T must be next to nmap_time string.
     # -n to skip reverse DNS lookup
     # -sn to skip all TCP/port checks
     # -PE to invoke standard ICMP echo check
@@ -132,10 +137,16 @@ def run_ping(ip_string, down_time_dict):
     print ("{" + time_st + "}" + jtu.color.purple + " [Up: " + str(ip_up_count) + "/" + str(ip_total_count) + " " + str(up_percentage) + "]" + jtu.color.end)
     
 
+    #Get terminal width (colums) and MOD divider before next step
+    entry_str_length = 24 # Length of entire entry within the parenthesis plus " "
+    term_size = shutil.get_terminal_size()
+    term_columns = term_size[0]
+    mod_div = term_columns // entry_str_length # "//" is integer division
+
     #next, iterate down_time_dict and print all down IP's with thier time differences
     newline = 0 #counter for when to make a newline
     for d_ip in down_time_dict:
-        if (newline % 7) == 0 and newline != 0: # for when to make new line, MOD operation
+        if (newline % mod_div) == 0 and newline != 0: # for when to make new line, MOD operation
             print("")
         duration = now_time - down_time_dict[d_ip]
 
