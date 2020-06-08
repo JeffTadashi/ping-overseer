@@ -1,7 +1,7 @@
 Metadata-Version: 2.1
 Name: ping-overseer
-Version: 0.0.1
-Summary: Mass ping module!
+Version: 0.0.3
+Summary: Mass ping monitoring module!
 Home-page: https://github.com/JeffTadashi/ping-overseer
 Author: Jeff Tadashi Moy
 Author-email: jeff@jefftadashi.com
