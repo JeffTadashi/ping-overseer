@@ -45,17 +45,24 @@ def main(argv):
     # Global variables
     ping_ip_str = ''
 
+
     # If -f defined, open file (as a List, per line) and starting parsing for IP addresses
     if args.file:
         with open(args.file) as file:
             file_list = file.readlines()
-        total_file_ip_list = []
+        #total_file_ip_list = []
         for f_line in file_list:
-            find_ip = re.findall(jtu.regex.ip, f_line) #will ouput a list of ip's. Empty list for no IP's
-            total_file_ip_list = total_file_ip_list + find_ip
+            find_ip = re.findall(jtu.regex.ip_or_cidr, f_line) #will output a list of tuples (with CIDR extention as second tuple)
+
+            # Convert each tuple to string, then add to ping_ip_str
+            for i in range(len(find_ip)):
+                i_cidr =  ''.join(find_ip[i])
+                ping_ip_str = ping_ip_str + " " + i_cidr
+ 
+            #total_file_ip_list = total_file_ip_list + find_ip
         
-        for i in total_file_ip_list: #Iterate thru final list and add to nmap string
-            ping_ip_str = ping_ip_str + " " + i
+        #for i in total_file_ip_list: #Iterate thru final list and add to nmap string
+        #    ping_ip_str = ping_ip_str + " " + i
         
 
     # If -i defined, build string from arg-created list of IP/CIDRS
