@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="ping-overseer",
-    version="0.0.3",
+    version="0.0.4",
     author="Jeff Tadashi Moy",
     author_email="jeff@jefftadashi.com",
     description="Mass ping monitoring module!",
