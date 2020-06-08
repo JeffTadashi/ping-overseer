@@ -5,6 +5,8 @@
 # TODO: Monitoring phase to ignore IP's that are down during that initial time (60s). 
 # Needs to change main "str" input
 
+# TODO: Create as module for pypi. Need to research how to make script callable from BASH (put "scripts" config in setup.py, file needs to be renamed to no-extension)
+
 import argparse
 import sys
 import os
