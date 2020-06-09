@@ -1,13 +1,38 @@
 Metadata-Version: 2.1
 Name: ping-overseer
-Version: 0.0.5
+Version: 0.1.0
 Summary: Mass ping monitoring module!
 Home-page: https://github.com/JeffTadashi/ping-overseer
 Author: Jeff Tadashi Moy
 Author-email: jeff@jefftadashi.com
 License: gpl-3.0
 Description: # ping-overseer
-        Mass ping real-time monitoring tool
+        
+        This is a mass ping monitoring tool with the following features:
+        
+        - Easily input a list of IP's from any source
+        - Ping monitors IP's in real time
+        - Constantly displays what IP's are down
+        - Highlights for longer downtime IP's
+        
+        This is based on some functionality from PingInfoView. However, I needed something that ran on MacOS, thus this project was born!
+        
+        I mainly use this for real-time work during network switch cutovers. It is meant to be a short-term tool (minutes/hours of usage), not something for monitoing over days.
+        
+        ## Installation
+        
+        Get the latest version through PIP/PyPi:
+        ```
+        sudo pip3 install --upgrade ping-overseer
+        ```
+        
+        NMAP application is also required, download that at: https://nmap.org
+        
+        Then simply run as:
+        ```
+        sudo ping-overseer -h
+        ```
+        
         
 Platform: UNKNOWN
 Classifier: Programming Language :: Python :: 3

@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+# TODO: Test admin/windows warning on Windows.
+
 # TODO: Monitoring phase to ignore IP's that are down during that initial time (60s). 
 # Needs to change main "str" input
 
@@ -9,6 +11,7 @@ import os
 import shutil
 import re
 import time
+import ctypes
 from datetime import datetime
 from datetime import timedelta
 
@@ -20,7 +23,7 @@ def main(argv):
     print(jtu.color.end + "")
     print("   @@#############################@@") 
     print("   @@    " + jtu.color.bold + "    ping-overseer    " + jtu.color.end + "    @@") 
-    print("   @@        by JeffTadashi       @@") 
+    print("   @@   by JeffTadashi  v0.1.0    @@") 
     print("   @@#############################@@") 
     print(jtu.color.end + "")
 
@@ -38,8 +41,13 @@ def main(argv):
     print ("(Escape with Ctrl-C or the usual escape keys)")
     print ("")
 
-    if not os.geteuid()==0:
-        print (jtu.color.yellow + "WARNING!: Script not running as sudo/root. ICMP pings (nmap) will not work as fully intended." +  jtu.color.end)
+    #Warning if not admin/root
+    try:
+        is_admin = os.getuid() == 0 #Linux/MacOS
+    except: 
+        is_admin = ctypes.windll.shell32.IsUserAnAdmin() != 0   # Windows
+    if not is_admin:
+        print (jtu.color.yellow + jtu.color.bold + "WARNING!!! Script not running as admin/sudo/root. ICMP pings (nmap) will not work as fully intended." +  jtu.color.end)
         print("")
 
 
