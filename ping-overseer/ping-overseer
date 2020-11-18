@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 
+# TODO: change ping-overseer to sym-link to ping-overseer.py
+# See example: https://github.com/ansible/ansible/blob/devel/bin/ansible
+
 # TODO: Test admin/windows warning on Windows.
 
 # TODO: Monitoring phase to ignore IP's that are down during that initial time (60s). 
